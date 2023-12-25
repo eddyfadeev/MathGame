@@ -104,4 +104,16 @@ internal static class GameUtils
             Console.WriteLine($"{GameUtils.AvailableHotKeys[i]} - {enumData.GetValue(i)}");
         } // end of for loop.
     } // end of DisplayGameOptions method.
+    
+    internal static void DisplayGameHistory()
+    {
+        Console.Clear();
+        foreach (var str in GameUtils.GameHistory)
+        {
+            Console.WriteLine(str);
+        }
+
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadKey();
+    }
 }

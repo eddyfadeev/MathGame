@@ -1,5 +1,6 @@
 ﻿namespace MathGame;
 
+// TODO: Use StringBuilder for AddToGameHistory method.
 internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxRange)
 {
     private readonly Random _randomNumber = new();
@@ -20,8 +21,9 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
      */
     public void Start()
     {
-        // TODO: Implement AddToGameHistory method.
-        // AddToGameHistory($"Game Type: {GameType} - Rounds: {Rounds} - Score: {Score}.");
+        string toStore = $"Game type: {GameType}\n" + 
+                         "| Round | Question          | User     | Correct  | Result     | Score |\n" +
+                         "------------------------------------------------------------------------\n";
         // Loop for the number of rounds.
         for (int i = 1; i <= Rounds; i++)
         {
@@ -31,15 +33,19 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
             
             AskAQuestion(GameType, MinRange, MaxRange);
             
-            UserInput = GameUtils.GetInput(0, int.MaxValue);
+            UserInput = GameUtils.GetInput(-1_000_000, 1_000_000);
             
             Correctness = EvaluateAnswer(UserInput) ? "Correct!" : "Incorrect!";
             
             Console.WriteLine(Correctness);
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
-            
+            toStore +=
+                $"| {i,5} | {CurrentQuestion,-17} | {UserInput,8} | {CorrectAnswer,8} | {Correctness,-10} | {Score,5} |\n";
         } // end of for loop.
+
+        toStore += "------------------------------------------------------------------------";
+        AddToGameHistory(toStore);
         GameUtils.TotalScore += Score;
     } // end of Start method.
     
@@ -162,7 +168,6 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
      */
     private void AddToGameHistory(string gameHistory)
     {
-        // TODO: Implement this method.
         GameUtils.GameHistory.Add(gameHistory);
     } // end of AddToGameHistory method.
 } // end of MathGame class.

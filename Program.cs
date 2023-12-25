@@ -58,7 +58,7 @@ static class Program
             // Game section start
             if (input == 'V')
             {
-                Console.WriteLine(GameUtils.GameHistory);
+                GameUtils.DisplayGameHistory();
             }
             if (input == 'Q')
             {
