@@ -1,80 +1,168 @@
 ﻿namespace MathGame;
 
-internal class MathGame
+internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxRange)
 {
-    private readonly GameOptions _avaliableOptions = new();
-    
-
-    public void Start()
-    {
-        Console.WriteLine("Welcome to the Math Game!");
-        Console.WriteLine("To select an option, enter the letter and press Enter.");
-        Console.WriteLine("Press any key to continue...");
-        
-        ShowMenu();
-        char input = GetInput();
-
-        Console.WriteLine(input);
-    }
-
-    private void ShowMenu()
-    {
-        Console.WriteLine("What game would you like to play?");
-        Console.WriteLine("V - View Previous Games");
-        DisplayGameOptions(_avaliableOptions);
-        Console.WriteLine("Q - Quit the program");
-    }
-    
-    public static int AskForInput(int optionsNumber)
-    {
-        while (true)
-        {
-            var input = Console.ReadLine();
-            
-            if (!string.IsNullOrEmpty(input) && input.All(char.IsDigit))
-            {
-                int chosenOption = Convert.ToInt32(input);
-                
-                if (chosenOption >= 1 && chosenOption <= optionsNumber)
-                    return chosenOption;
-            }
-            
-            Console.Write($"Range must be between 1 and {optionsNumber}. Please try again: ");
-        }
-    } // end of AskForInput()
-    private char GetInput()
-    {
-        while (true)
-        {
-            char convertedInput = ' ';
-            var input = Console.ReadLine().Trim().ToUpper();
-            if (!string.IsNullOrEmpty(input) && input.Length == 1)
-            {
-                // TODO: Finish this method.
-            }
-
-            return convertedInput;
-        }
-    }
+    private readonly Random _randomNumber = new();
+    private int Score { get; set; }
+    private int MinRange { get; } = minRange;
+    private int MaxRange { get; } = maxRange;
+    private GameOptions GameType { get; } = gameType;
+    private int Rounds { get; } = rounds;
+    private int CorrectAnswer { get; set; }
+    private string CurrentQuestion { get; set; }
+    private int UserInput { get; set; }
+    private string Correctness { get; set; }
 
     /**
      * <summary>
-     * Displays the game options to the user defined in passed enum.
+     * Starts the game.
      * </summary>
-     * <param name="options">Enum with the game options to display.</param>
      */
-    private void DisplayGameOptions(Enum options)
+    public void Start()
     {
-        // Get all name-value pairs for incoming parameter.
-        Array enumData = Enum.GetValues(options.GetType());
-        
-        // Represent each name-value pair as a string.
-        for(int i = 0; i < enumData.Length; i++)
+        // TODO: Implement AddToGameHistory method.
+        // AddToGameHistory($"Game Type: {GameType} - Rounds: {Rounds} - Score: {Score}.");
+        // Loop for the number of rounds.
+        for (int i = 1; i <= Rounds; i++)
         {
-            // Convert the value to a char.
-            char hotKey = Convert.ToChar(enumData.GetValue(i));
-            // Display the hotkey and the name of the option.
-            Console.WriteLine($"{hotKey} - {enumData.GetValue(i)}");
-        }
-    }
-}
+            Console.Clear();
+            Console.WriteLine($"Round {i} of {Rounds}");
+            Console.WriteLine($"Score: {Score}");
+            
+            AskAQuestion(GameType, MinRange, MaxRange);
+            
+            UserInput = GameUtils.GetInput(0, int.MaxValue);
+            
+            Correctness = EvaluateAnswer(UserInput) ? "Correct!" : "Incorrect!";
+            
+            Console.WriteLine(Correctness);
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+            
+        } // end of for loop.
+        GameUtils.TotalScore += Score;
+    } // end of Start method.
+    
+    /**
+     * <summary>
+     * Calls needed method based on the passed operation and range.
+     * </summary>
+     * <param name="operation">Operation to generate a question for.</param>
+     * <param name="fromNumber">Lower range of the question.</param>
+     * <param name="toNumber">Upper range of the question.</param>
+     */
+    private void AskAQuestion(GameOptions operation, int fromNumber, int toNumber)
+    {
+        int firstNumber = _randomNumber.Next(fromNumber, toNumber + 1), 
+            secondNumber = _randomNumber.Next(fromNumber, toNumber + 1);
+        
+        switch (operation)
+        {
+            case GameOptions.Addition:
+                AdditionGame(firstNumber, secondNumber);
+                break;
+            case GameOptions.Subtraction:
+                SubtractionGame(firstNumber, secondNumber);
+                break;
+            case GameOptions.Multiplication:
+                MultiplicationGame(firstNumber, secondNumber);
+                break;
+            case GameOptions.Division:
+                DivisionGame();
+                break;
+        } // end of switch statement.
+    } // end of AskAQuestion method.
+    
+    /**
+     * <summary>
+     * Generates an addition question.
+     * </summary>
+     * <param name="firstNum">First number of the question.</param>
+     * <param name="secondNum">Second number of the question.</param>
+     */
+    private void AdditionGame(int firstNum, int secondNum)
+    {
+        CorrectAnswer = firstNum + secondNum;
+        CurrentQuestion = $"{firstNum} + {secondNum} = ? ";
+        Console.Write(CurrentQuestion);
+    } // end of AdditionGame method.
+    
+    /**
+     * <summary>
+     * Generates a subtraction question.
+     * </summary>
+     * <param name="firstNum">First number of the question.</param>
+     * <param name="secondNum">Second number of the question.</param>
+     */
+    private void SubtractionGame(int firstNum, int secondNum)
+    {
+        CorrectAnswer = firstNum - secondNum;
+        CurrentQuestion = $"{firstNum} - {secondNum} = ? ";
+        Console.Write(CurrentQuestion);
+    } // end of SubtractionGame method.
+    
+    /**
+     * <summary>
+     * Generates a multiplication question.
+     * </summary>
+     * <param name="firstNum">First number of the question.</param>
+     * <param name="secondNum">Second number of the question.</param>
+     */
+    private void MultiplicationGame(int firstNum, int secondNum)
+    {
+        CorrectAnswer = firstNum * secondNum;
+        CurrentQuestion = $"{firstNum} * {secondNum} = ? ";
+        Console.Write(CurrentQuestion);
+    } // end of MultiplicationGame method.
+    
+    /**
+     * <summary>
+     * Generates a division question.
+     * </summary>
+     */
+    private void DivisionGame()
+    {
+        int dividend, divisor, result;
+
+        do
+        {
+            // Generate a divisor that is not 0.
+            divisor = _randomNumber.Next(MinRange == 0 ? 1 : MinRange, MaxRange + 1);
+            // Generate a result that is in the range. 
+            result = _randomNumber.Next(MinRange, MaxRange + 1);
+            // Calculate dividend by multiplying divisor and result.
+            // This will ensure that division will be without remainder.
+            dividend = divisor * result;
+        // Loop until dividend is in the range. 
+        } while (dividend > MaxRange);
+        // Set question to result.
+        CorrectAnswer = result;
+        CurrentQuestion = $"{dividend} / {divisor} = ? ";
+        Console.Write(CurrentQuestion);
+    } // end of DivisionGame method.
+
+    /**
+     * <summary>
+     * Evaluates the answer and increments the score if it is correct.
+     * </summary>
+     * <param name="answer">Answer to evaluate.</param>
+     * <returns>True if answer is correct, false otherwise.</returns>
+     */
+    private bool EvaluateAnswer(int answer)
+    {
+        if (answer != CorrectAnswer) return false;
+        Score++;
+        return true;
+    }// end of EvaluateAnswer method.
+
+    /**
+     * <summary>
+     * Adds the game history to the list.
+     * </summary>
+     */
+    private void AddToGameHistory(string gameHistory)
+    {
+        // TODO: Implement this method.
+        GameUtils.GameHistory.Add(gameHistory);
+    } // end of AddToGameHistory method.
+} // end of MathGame class.
