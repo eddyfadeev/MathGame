@@ -1,6 +1,5 @@
 ﻿namespace MathGame;
 
-// TODO: Use StringBuilder for AddToGameHistory method.
 internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxRange)
 {
     private readonly Random _randomNumber = new();
@@ -21,12 +20,15 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
      */
     public void Start()
     {
-        string toStore = $"Game type: {GameType}\n" + 
-                         "| Round | Question          | User     | Correct  | Result     | Score |\n" +
-                         "------------------------------------------------------------------------\n";
+        bool lastRound = false;
+        
+        GameUtils.AddToGameHistory(GameType);
         // Loop for the number of rounds.
         for (int i = 1; i <= Rounds; i++)
         {
+            // Check if it is the last round.
+            if (i == Rounds) lastRound = true;
+            
             Console.Clear();
             Console.WriteLine($"Round {i} of {Rounds}");
             Console.WriteLine($"Score: {Score}");
@@ -40,12 +42,10 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
             Console.WriteLine(Correctness);
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
-            toStore +=
-                $"| {i,5} | {CurrentQuestion,-17} | {UserInput,8} | {CorrectAnswer,8} | {Correctness,-10} | {Score,5} |\n";
+            GameUtils.AddToGameHistory(i, CurrentQuestion, UserInput, 
+                                        CorrectAnswer, Correctness, Score, lastRound);
         } // end of for loop.
 
-        toStore += "------------------------------------------------------------------------";
-        AddToGameHistory(toStore);
         GameUtils.TotalScore += Score;
     } // end of Start method.
     
@@ -65,16 +65,19 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
         switch (operation)
         {
             case GameOptions.Addition:
-                AdditionGame(firstNumber, secondNumber);
+                AdditionProblemGenerator(firstNumber, secondNumber);
                 break;
             case GameOptions.Subtraction:
-                SubtractionGame(firstNumber, secondNumber);
+                SubtractionProblemGenerator(firstNumber, secondNumber);
                 break;
             case GameOptions.Multiplication:
-                MultiplicationGame(firstNumber, secondNumber);
+                MultiplicationProblemGenerator(firstNumber, secondNumber);
                 break;
             case GameOptions.Division:
-                DivisionGame();
+                DivisionProblemGenerator();
+                break;
+            case GameOptions.Random:
+                RandomProblemGenerator(firstNumber, secondNumber);
                 break;
         } // end of switch statement.
     } // end of AskAQuestion method.
@@ -86,12 +89,12 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
      * <param name="firstNum">First number of the question.</param>
      * <param name="secondNum">Second number of the question.</param>
      */
-    private void AdditionGame(int firstNum, int secondNum)
+    private void AdditionProblemGenerator(int firstNum, int secondNum)
     {
         CorrectAnswer = firstNum + secondNum;
         CurrentQuestion = $"{firstNum} + {secondNum} = ? ";
         Console.Write(CurrentQuestion);
-    } // end of AdditionGame method.
+    } // end of AdditionProblemGenerator method.
     
     /**
      * <summary>
@@ -100,12 +103,12 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
      * <param name="firstNum">First number of the question.</param>
      * <param name="secondNum">Second number of the question.</param>
      */
-    private void SubtractionGame(int firstNum, int secondNum)
+    private void SubtractionProblemGenerator(int firstNum, int secondNum)
     {
         CorrectAnswer = firstNum - secondNum;
         CurrentQuestion = $"{firstNum} - {secondNum} = ? ";
         Console.Write(CurrentQuestion);
-    } // end of SubtractionGame method.
+    } // end of SubtractionProblemGenerator method.
     
     /**
      * <summary>
@@ -114,19 +117,19 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
      * <param name="firstNum">First number of the question.</param>
      * <param name="secondNum">Second number of the question.</param>
      */
-    private void MultiplicationGame(int firstNum, int secondNum)
+    private void MultiplicationProblemGenerator(int firstNum, int secondNum)
     {
         CorrectAnswer = firstNum * secondNum;
         CurrentQuestion = $"{firstNum} * {secondNum} = ? ";
         Console.Write(CurrentQuestion);
-    } // end of MultiplicationGame method.
+    } // end of MultiplicationProblemGenerator method.
     
     /**
      * <summary>
      * Generates a division question.
      * </summary>
      */
-    private void DivisionGame()
+    private void DivisionProblemGenerator()
     {
         int dividend, divisor, result;
 
@@ -145,7 +148,27 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
         CorrectAnswer = result;
         CurrentQuestion = $"{dividend} / {divisor} = ? ";
         Console.Write(CurrentQuestion);
-    } // end of DivisionGame method.
+    } // end of DivisionProblemGenerator method.
+    
+    private void RandomProblemGenerator(int firstNum, int secondNum)
+    {
+        int randomOperation = _randomNumber.Next(1, 5);
+        switch (randomOperation)
+        {
+            case 1:
+                AdditionProblemGenerator(firstNum, secondNum);
+                break;
+            case 2:
+                SubtractionProblemGenerator(firstNum, secondNum);
+                break;
+            case 3:
+                MultiplicationProblemGenerator(firstNum, secondNum);
+                break;
+            case 4:
+                DivisionProblemGenerator();
+                break;
+        } // end of switch statement.
+    } // end of RandomProblemGenerator method.
 
     /**
      * <summary>
@@ -160,14 +183,4 @@ internal class MathGame(GameOptions gameType, int rounds, int minRange, int maxR
         Score++;
         return true;
     }// end of EvaluateAnswer method.
-
-    /**
-     * <summary>
-     * Adds the game history to the list.
-     * </summary>
-     */
-    private void AddToGameHistory(string gameHistory)
-    {
-        GameUtils.GameHistory.Add(gameHistory);
-    } // end of AddToGameHistory method.
 } // end of MathGame class.
