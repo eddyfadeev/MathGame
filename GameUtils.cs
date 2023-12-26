@@ -1,11 +1,14 @@
-﻿namespace MathGame;
+﻿using System.Text;
+
+namespace MathGame;
 
 internal static class GameUtils
 {
     internal static char[] AvailableHotKeys { get; }
     internal static GameOptions AvailableOptions { get; }
-    internal static List<string> GameHistory { get; set; }
     internal static int TotalScore { get; set; }
+    private static List<string> GameHistory { get; set; }
+    private static StringBuilder StringToStore { get; set; }
 
     static GameUtils()
     {
@@ -16,9 +19,13 @@ internal static class GameUtils
             .ToArray();
 
         // Get all available options from GameOptions enum.
-        AvailableOptions = new GameOptions();
+        AvailableOptions = Enum.GetValues(typeof(GameOptions))
+            .Cast<GameOptions>()
+            .Aggregate((first, next) => first | next);
         // Initialize game history.
         GameHistory = new List<string>();
+        // Initialize string builder.
+        StringToStore = new StringBuilder();
     }
     
     /**
@@ -45,7 +52,7 @@ internal static class GameUtils
             if (parsed && (exists || 
                            convertedInput == 'Q' || 
                            convertedInput == 'V' || 
-                           convertedInput == 'R' || 
+                           convertedInput == 'G' || 
                            convertedInput == 'L' || 
                            convertedInput == 'U'))
             {
@@ -81,7 +88,6 @@ internal static class GameUtils
             if (parsed && withinRange) return convertedInput; 
             
             // Print error message.
-            Console.Clear();
             Console.WriteLine($"Invalid input. Please enter between {lowerBond} and {upperBond}.");
         } // end of while loop.
     } // end of GetInput(int) method.
@@ -115,5 +121,46 @@ internal static class GameUtils
 
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey();
+    }
+    
+    /**
+     * <summary>
+     * Adds game type to the game history StringBuilder object.
+     * </summary>
+     * <param name="gameType">Game type to add to the game history.</param>
+     */
+    internal static void AddToGameHistory(Enum gameType)
+    {
+        StringToStore.Append($"Game type: {gameType}\n" + 
+                             "| Round | Question          | User     | Correct  | Result     | Score |\n" +
+                             "------------------------------------------------------------------------\n");
+    } // end of AddToGameHistory method.
+
+    /**
+        * <summary>
+        * Adds game round to the game history StringBuilder object. If it is the last round,
+        * it adds closing line and adds the game history to the list and clears StringBuilder object.
+        * </summary>
+        * <param name="round">Round number.</param>
+        * <param name="currentQuestion">Current question.</param>
+        * <param name="userInput">User input.</param>
+        * <param name="correctAnswer">Correct answer.</param>
+        * <param name="correctness">Correctness of the answer.</param>
+        * <param name="score">Current score.</param>
+        * <param name="lastRound">Is it the last round?</param>
+        */
+    internal static void AddToGameHistory(int round, string currentQuestion, int userInput, 
+                                            int correctAnswer, string correctness, int score, bool lastRound)
+    {
+        StringToStore.Append($"| {round,5} | {currentQuestion,-17} | {userInput,8} | " +
+                             $"{correctAnswer,8} | {correctness,-10} | {score,5} |\n");
+
+        if (lastRound) 
+        {
+            StringToStore.Append("------------------------------------------------------------------------");
+            
+            GameHistory.Add(StringToStore.ToString());
+            StringToStore.Clear();
+        }
     }
 }

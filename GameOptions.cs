@@ -6,4 +6,5 @@ public enum GameOptions
     Subtraction = 'S',
     Multiplication = 'M',
     Division = 'D',
+    Random = 'R',
 }

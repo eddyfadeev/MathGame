@@ -2,86 +2,110 @@
 
 static class Program
 {
+    private static int _rounds = 5;
+    private static int _minRange = 1;
+    private static int _maxRange = 20;
     static void Main(string[] args)
     {
-        // Default settings.
-        int rounds = 5;
-        int minRange = 1;
-        int maxRange = 20;
-        
         // Welcome message.
+        ShowWelcomeMessage();
+
+        // Main menu.
+        while (true)
+        {
+            ShowMainMenu(_rounds, _minRange, _maxRange);
+            // Get input from the user.
+            char input = GameUtils.GetInput(GameUtils.AvailableHotKeys);
+            
+            if (GameUtils.AvailableHotKeys.Contains(input))
+            {
+                SelectGameMode(input);
+            }
+            else
+            {
+                ChangeOptions(input);
+            }
+            Console.Clear();
+        }
+    }
+    
+    /**
+     * <summary>
+     * Prints welcome message and waits for user to press any key.
+     * </summary>
+     */
+    private static void ShowWelcomeMessage()
+    {
         Console.WriteLine("Welcome to the Math Game!");
         Console.WriteLine("To select an option, enter the letter and press Enter.");
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey();
         Console.Clear();
+    }
 
-        // Main menu.
-        while (true)
+    private static void ShowMainMenu(int rounds, int minRange, int maxRange)
+    {
+        Console.WriteLine("-----------------------------------------------------------");
+        Console.WriteLine($"Total Score: {GameUtils.TotalScore}");
+        Console.WriteLine("V - View Previous Games");
+        Console.WriteLine("-----------------------------------------------------------");
+        Console.WriteLine("What game would you like to play?");
+        GameUtils.DisplayGameOptions(GameUtils.AvailableOptions);
+        Console.WriteLine("-----------------------------------------------------------");
+        Console.WriteLine("Settings");
+        Console.WriteLine($"G - Rounds: {rounds}, L - Lower Range: {minRange}, U - Upper Range: {maxRange}");
+        Console.WriteLine("-----------------------------------------------------------");
+        Console.WriteLine("Q - Quit the program");
+    }
+
+    private static void ChangeOptions(char userInput)
+    {
+        switch (userInput)
         {
-            Console.WriteLine("-----------------------------------------------------------");
-            Console.WriteLine($"Total Score: {GameUtils.TotalScore}");
-            Console.WriteLine("V - View Previous Games");
-            Console.WriteLine("-----------------------------------------------------------");
-            Console.WriteLine("What game would you like to play?");
-            GameUtils.DisplayGameOptions(GameUtils.AvailableOptions);
-            Console.WriteLine("-----------------------------------------------------------");
-            Console.WriteLine("Settings");
-            Console.WriteLine($"R - Rounds: {rounds}, L - Lower Range: {minRange}, U - Upper Range: {maxRange}");
-            Console.WriteLine("-----------------------------------------------------------");
-            Console.WriteLine("Q - Quit the program");
-            
-            // Get input from the user.
-            char input = GameUtils.GetInput(GameUtils.AvailableHotKeys);
-            
-            // Settings section start
-            if (input.Equals('R'))
-            {
+            case 'G':
                 Console.WriteLine("How many rounds would you like to play?");
                 Console.Write("Enter number from 1 to 20: ");
-                rounds = GameUtils.GetInput(1, 20);
-            }
-            if (input.Equals('L'))
-            {
-                Console.WriteLine("How low you wanna go?");
+                _rounds = GameUtils.GetInput(1, 20);
+                break;
+            case 'L':
+                Console.WriteLine("Please enter the number we should count from.");
                 Console.Write("Enter number from 1 to 999: ");
-                minRange = GameUtils.GetInput(1, 999);
-            }
-            if (input.Equals('U'))
-            {
-                Console.WriteLine("How high you wanna go?");
-                Console.Write($"Enter number from {minRange} to 1000: ");
-                maxRange = GameUtils.GetInput(minRange, 1000);
-            }
-            // End of settings section
-
-            // Game section start
-            if (input == 'V')
-            {
+                _minRange = GameUtils.GetInput(1, 999);
+                _maxRange = _minRange > _maxRange ? _minRange + 1 : _maxRange;
+                break;
+            case 'U':
+                Console.WriteLine("Please enter the  number we should count to.");
+                Console.Write($"Enter number from {_minRange} to 1000: ");
+                _maxRange = GameUtils.GetInput(_minRange, 1000);
+                break;
+            case 'V':
                 GameUtils.DisplayGameHistory();
-            }
-            if (input == 'Q')
-            {
+                break;
+            case 'Q':
                 Environment.Exit(0);
-            }
-            if (input == 'A')
-            {
-                new MathGame(GameOptions.Addition, rounds, minRange, maxRange).Start();
-            }
-            if (input == 'S')
-            {
-                new MathGame(GameOptions.Subtraction, rounds, minRange, maxRange).Start();
-            }
-            if (input == 'M')
-            {
-                new MathGame(GameOptions.Multiplication, rounds, minRange, maxRange).Start();
-            }
-            if (input == 'D')
-            {
-                new MathGame(GameOptions.Division, rounds, minRange, maxRange).Start();
-            }
-            // End of game section
-            Console.Clear();
+                break;
         }
-    }
-}
+    } // end of ChangeOptions method.
+    
+    private static void SelectGameMode(char userInput)
+    {
+        switch (userInput)
+        {
+            case 'A':
+                new MathGame(GameOptions.Addition, _rounds, _minRange, _maxRange).Start();
+                break;
+            case 'S':
+                new MathGame(GameOptions.Subtraction, _rounds, _minRange, _maxRange).Start();
+                break;
+            case 'M':
+                new MathGame(GameOptions.Multiplication, _rounds, _minRange, _maxRange).Start();
+                break;
+            case 'D':
+                new MathGame(GameOptions.Division, _rounds, _minRange, _maxRange).Start();
+                break;
+            case 'R':
+                new MathGame(GameOptions.Random, _rounds, _minRange, _maxRange).Start();
+                break;
+        }
+    } // end of SelectGameMode method.
+} // end of Program class.
